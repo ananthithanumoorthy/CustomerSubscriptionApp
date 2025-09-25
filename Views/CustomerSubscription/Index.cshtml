@@ -1,0 +1,50 @@
+﻿@page
+@model CustomerSubscriptionApp.Web.Views.CustomerSubscription.IndexModel
+@{
+    ViewBag.Title = "Customer Subscription";
+}
+<h2>Customer Subscription</h2>
+
+<div>
+    <label>Customer ID: <input id="customerId" /></label>
+    <label>Subscription Name: <input id="subscriptionName" /></label>
+    <label>Start: <input id="start" type="date" /></label>
+    <label>End: <input id="end" type="date" /></label>
+    <button id="btnSearch">Search</button>
+</div>
+
+<table border="1" id="tblsubs">
+    <thead><tr><th>ID</th><th>CustomerId</th><th>Name</th><th>Sub</th><th>Count</th><th>Start</th><th>End</th><th>Active</th><th>Actions</th></tr></thead>
+    <tbody></tbody>
+</table>
+
+<script>
+    document.getElementById('btnSearch').addEventListener('click', load);
+    async function load() {
+        const customerId = document.getElementById('customerId').value;
+        const subscriptionName = document.getElementById('subscriptionName').value;
+        if (!customerId) { alert('CustomerId required'); return; }
+        const url = `/api/subscriptions?customerId=${encodeURIComponent(customerId)}&subscriptionName=${encodeURIComponent(subscriptionName)}`;
+        const res = await fetch(url, { credentials: 'same-origin' });
+        if (!res.ok) { alert('Error: ' + res.statusText); return; }
+        const list = await res.json();
+        const tbody = document.querySelector('#tblsubs tbody'); tbody.innerHTML = '';
+        list.forEach(s => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${s.id}</td><td>${s.customerId}</td><td>${s.customerName}</td><td>${s.subscriptionName}</td><td>${s.subscriptionCount}</td>
+                <td>${new Date(s.startDate).toLocaleDateString()}</td><td>${s.endDate ? new Date(s.endDate).toLocaleDateString() : ''}</td><td>${s.active}</td>
+                <td>
+                    <button onclick="updateCount('${s.customerId}','${s.subscriptionName}','increment')">+1</button>
+                    <button onclick="updateCount('${s.customerId}','${s.subscriptionName}','decrement')">-1</button>
+                </td>`;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function updateCount(cust, sub, action) {
+        const url = `/api/subscriptions/${encodeURIComponent(cust)}/${encodeURIComponent(sub)}/count?action=${action}`;
+        const res = await fetch(url, { method: 'POST', credentials: 'same-origin' });
+        if (!res.ok) { alert('Error: ' + res.statusText); return; }
+        await load();
+    }
+</script>
