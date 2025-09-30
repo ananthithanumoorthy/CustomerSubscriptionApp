@@ -16,7 +16,8 @@ Simple ASP.NET Core web app for Customer Subscription test project.
    dotnet ef migrations add InitialCreate
    dotnet ef database update
    dotnet run
-3. Open `https://localhost:5001` and login:
+3. Open `https://localhost:44352/Account/Login
+ ` and login:
    admin@local.test / Admin@123
 
 ## Notes
