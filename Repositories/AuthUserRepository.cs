@@ -19,6 +19,10 @@ namespace CustomerSubscriptionApp.Web.Repositories
 
         public async Task<UserMaster?> AuthenticateAsync(string username, string password)
         {
+
+
+
+
             var user = await _repo.FindByUsernameAsync(username);
             if (user == null) return null;
             var result = _hasher.VerifyHashedPassword(user, user.PasswordHash, password);

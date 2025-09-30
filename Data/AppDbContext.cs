@@ -1,21 +1,38 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using CustomerSubscriptionApp.Web.Models;
+
 namespace CustomerSubscriptionApp.Web.Data
 {
-    
-        public class AppDbContext : DbContext
+    /// <summary>
+    /// Application DbContext - manages tables and constraints
+    /// </summary>
+    public class AppDbContext : DbContext
+    {
+        public AppDbContext(DbContextOptions<AppDbContext> opts) : base(opts) { }
+
+        public DbSet<UserMaster> UserMasters { get; set; }
+        public DbSet<CustomerSubscription> CustomerSubscriptions { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder mb)
         {
-            public AppDbContext(DbContextOptions<AppDbContext> opts) : base(opts) { }
+            base.OnModelCreating(mb);
 
-            public DbSet<UserMaster> UserMasters { get; set; }
-            public DbSet<CustomerSubscription> CustomerSubscriptions { get; set; }
+            // ---------------------------
+            // Unique Constraints
+            // ---------------------------
+            mb.Entity<UserMaster>()
+              .HasIndex(u => u.UserName)
+              .IsUnique();
 
-            protected override void OnModelCreating(ModelBuilder mb)
-            {
-                base.OnModelCreating(mb);
-                mb.Entity<UserMaster>().HasIndex(u => u.UserName).IsUnique();
-                mb.Entity<CustomerSubscription>().HasIndex(c => new { c.CustomerId, c.SubscriptionName });
-            }
+            mb.Entity<CustomerSubscription>()
+              .HasIndex(c => new { c.CustomerId, c.SubscriptionName })
+              .IsUnique();
+
+            // ---------------------------
+            // STATIC seed data (optional)
+            // ---------------------------
+            // Only use non-dynamic values here. Do NOT use PasswordHasher here.
+            // Passwords will be seeded at runtime via DbInitializer.
         }
     }
-
+}

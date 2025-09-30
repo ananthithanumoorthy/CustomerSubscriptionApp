@@ -1,59 +1,55 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.EntityFrameworkCore;
-using CustomerSubscriptionApp.Web.Data;
+﻿using CustomerSubscriptionApp.Web.Data;
 using CustomerSubscriptionApp.Web.Repositories;
 using CustomerSubscriptionApp.Web.Services;
-
-// Ensure the Microsoft.EntityFrameworkCore.Sqlite package is installed
-// Add the following using directive to resolve the 'UseSqlite' method
-using Microsoft.EntityFrameworkCore.Sqlite;
-
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Add services to the container
 builder.Services.AddControllersWithViews();
+// ✅ Add Cookie Authentication
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";     // redirect here if not logged in
+        options.LogoutPath = "/Account/Logout";   // optional
+        options.AccessDeniedPath = "/Account/AccessDenied"; // optional
+    });
 
-// DB - default SQLite (appsettings.json has connection)
+// Logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
+// Database - SQLite (you can change to SQL Server if needed)
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Authentication - cookie
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options => { options.LoginPath = "/Account/Login"; });
-
-// DI - repositories & services
-builder.Services.AddScoped<IAuthUserservice, AuthUserRepository>();
-builder.Services.AddScoped<ISubscriptionService, SubscriptionRepository>();
+// Dependency Injection for Repository & Service
 builder.Services.AddScoped<IAccountService, AccountRepository>();
-builder.Services.AddSingleton<IEmailSender, ConsoleEmailSender>();
+builder.Services.AddScoped<ISubscriptionService, SubscriptionRepository>();
+builder.Services.AddScoped<IEmailSender, ConsoleEmailSender>();
+builder.Services.AddScoped<IAuthUserservice, AuthUserRepository>();
 
-// data protection available automatically
-builder.Services.AddDataProtection();
-
-builder.Services.AddSwaggerGen();
-builder.WebHost.UseUrls("http://127.0.0.1:5000");
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-else
-{
     app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
 }
+
+app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+
+// ✅ Enable Authentication & Authorization middleware
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Account}/{action=Login}/{id?}");
+
 
 app.Run();
-

@@ -26,6 +26,9 @@ namespace CustomerSubscriptionApp.Web.Migrations
                     b.Property<bool>("Active")
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("CustomerId")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -49,7 +52,8 @@ namespace CustomerSubscriptionApp.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CustomerId", "SubscriptionName");
+                    b.HasIndex("CustomerId", "SubscriptionName")
+                        .IsUnique();
 
                     b.ToTable("CustomerSubscriptions");
                 });

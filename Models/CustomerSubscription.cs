@@ -12,7 +12,7 @@ namespace CustomerSubscriptionApp.Web.Models
         [Required]
         public string CustomerId { get; set; } = null!;
 
-        [Required]
+       
         public string CustomerName { get; set; } = null!;
 
         [Required]
@@ -25,5 +25,6 @@ namespace CustomerSubscriptionApp.Web.Models
         public DateTime? EndDate { get; set; }
 
         public bool Active { get; set; } = true;
+        public DateTime CreatedAt { get; internal set; }
     }
 }
